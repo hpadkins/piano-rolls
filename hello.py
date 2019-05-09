@@ -25,26 +25,25 @@ Songs, Composers, Rolls = Base.classes.songs, Base.classes.composers, Base.class
 
 @app.route("/")
 def hello():
-	return render_template('hello.html')
+        return render_template('hello.html')
 
 @app.route("/", methods=["POST"])
 def hello_post():
-	titleSearch = request.form['title'].lower()
-	songs = []
+        titleSearch = request.form['title'].lower()
+        songs = []
 
-	s = text("SELECT songs.title FROM songs WHERE LOWER(songs.title) LIKE :titleSearch")
+        s = text("SELECT songs.title FROM songs WHERE LOWER(songs.title) LIKE :titleSearch")
 
-	query = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
+        query = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
 
-	if(query == None):
-		return "No results found for '"+titleSearch+"'"
-	else:
-		for song in query:
-			songs.append(song['title'] + '<br>')
+        if(query):
+                for song in query:
+                        songs.append(song['title'] + '<br>')
 
-		songsStr = ''.join(songs)
-		return Markup('<strong> '+songsStr +'</strong>')
-
+                songsStr = ''.join(songs)
+                return Markup('<strong> '+songsStr +'</strong>')
+        else:
+                return "No results found for '"+titleSearch+"'"
 
 session.close()
 if __name__ == '__main__':
