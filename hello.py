@@ -23,26 +23,16 @@ session = Session()
 
 Songs, Composers, Rolls = Base.classes.songs, Base.classes.composers, Base.classes.rolls
 
-"""
-songs = []
-for instance in session.query(Songs):
-	songs.append(instance.title)
-
-songsStr = ''.join(songs)
-print(songsStr)
-"""
-
-
 @app.route("/")
 def hello():
 	return render_template('hello.html')
 
 @app.route("/", methods=["POST"])
 def hello_post():
-	titleSearch = request.form['title']
+	titleSearch = request.form['title'].lower()
 	songs = []
 
-	s = text("SELECT songs.title FROM songs WHERE songs.title LIKE :titleSearch")
+	s = text("SELECT songs.title FROM songs WHERE LOWER(songs.title) LIKE :titleSearch")
 
 	query = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
 
