@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey
+from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 #from flask_sqlalchemy import SQLAlchemy
@@ -40,38 +40,35 @@ Songs, Composers, Rolls = Base.classes.songs, Base.classes.composers, Base.class
 
 songs = []
 for instance in session.query(Songs):
-	songs.append(instance.title + '\n')
+	songs.append(instance.title)
 
 songsStr = ''.join(songs)
 print(songsStr)
 
-#print("{}", Song.title_id)
-#print("{}", Song.__tablename__)
-
-
-#from app import models
-#db.create_all()
 
 @app.route("/")
 def hello():
-    #return "Hello World!"
-	#return songsStr
-	return render_template('hello.html', name = songsStr)
+	return render_template('hello.html', songs = songsStr)
 
-@app.route("/name/<name>")
-def get_book_name(name):
-    return "name : {}".format(name)
+@app.route("/", methods=["POST"])
+def hello_post():
+	titleSearch = request.form['title']
+	songs = []
 
-@app.route("/details")
-def get_book_details():
-    author=request.args.get('author')
-    published=request.args.get('published')
-    return "Author : {}, Published: {}".format(author,published)
+	s = text("SELECT songs.title FROM songs WHERE songs.title LIKE :titleSearch")
 
-#app.config['DEBUG'] = True
-#db.init_app(app)
+	query = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
+
+	if(query == None):
+		return "No results found for '"+titleSearch+"'"
+	else:
+		for song in query:
+			songs.append(song['title'])
+
+		songsStr = ''.join(songs)
+		return songsStr
+
 
 session.close()
 if __name__ == '__main__':
-	#redirect('http://web.cecs.pdx.edu/~hadkins/pianorolls/')
 	app.run()
