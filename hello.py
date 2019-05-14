@@ -6,7 +6,7 @@ from flask import Flask, request, redirect, render_template, Markup
 
 app = Flask(__name__)
 
-app.config.from_object(os.environ['APP_SETTINGS'])
+#app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -30,7 +30,18 @@ def hello():
 @app.route("/", methods=["POST"])
 def hello_post():
         titleSearch = request.form['title'].lower()
+	composerSearch = request.form['composer'].lower()
+        performerSearch = request.form['performer'].lower()
+        mfgrSearch = request.form['mfgr'].lower()
+        rollNrSearch = request.form['rollNr'].lower()
+        nrCopiesSearch = request.form['nrCopies'].lower()
+
         songs = []
+	composers = []
+	performers = []
+	mfgrs = []
+	rollNrs = []
+	nrCopies = []
 
         s = text("SELECT songs.title FROM songs WHERE LOWER(songs.title) LIKE :titleSearch")
 
