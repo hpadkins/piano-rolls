@@ -10,40 +10,24 @@
 
    <body>
    
-      <h1> Welcome to the piano rolls database!</h1>
+      <h2> Welcome to the piano rolls database!</h2>
       <h3> Search the database: </h3>
 
 
-	<form method="POST"> 
-		Composer:
-		<input name="composer">
-		<input type="submit">
-	</form>
-	<form method="POST"> 
-		Title:
-		<input name="title">
-		<input type="submit">
-	</form>
-	<form method="POST"> 
-		Performer:
-		<input name="performer">
-		<input type="submit">
-	</form>
-	<br>
-	<form method="POST"> 
-		Manufacturer:
-		<input name="mfgr">
-		<input type="submit">
-	</form>
-	<form method="POST"> 
-		Roll number:
-		<input name="rollNr">
-		<input type="submit">
-	</form>
-	<form method="POST"> 
-		Number of copies:
-		<input name="nrCopies">
-		<input type="submit">
+	<form method="POST" action="{{ url_for('search_results') }}"> 
+		Composer:<br>
+		<input name="composer" type="text">
+		<br>Title:<br>
+		<input name="title" type="text">
+		<br>Performer:<br>
+		<input name="performer" type="text">
+		<br>Manufacturer:<br>
+		<input name="mfgr" type="text">
+		<br>Roll number:<br>
+		<input name="rollNr" type="text">
+		<br>Number of copies:<br>
+		<input name="nrCopies" type="text"><br><br>
+		<input type="submit" value="Search">
 	</form>
       
    </body>
