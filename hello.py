@@ -9,7 +9,6 @@ app = Flask(__name__)
 #app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
 Session = sessionmaker()
 engine = create_engine("postgresql://hadkins:Louise2007!@pianorolls.cnkqkcboxyt7.us-west-2.rds.amazonaws.com/pianoRolls")
 metadata = MetaData()
@@ -21,41 +20,144 @@ Session.configure(bind=engine)
 session = Session()
 
 
-Songs, Composers, Rolls = Base.classes.songs, Base.classes.composers, Base.classes.rolls
-
 @app.route("/")
 def hello():
         return render_template('hello.html')
 
-@app.route("/", methods=["POST"])
-def hello_post():
-        titleSearch = request.form['title'].lower()
-	composerSearch = request.form['composer'].lower()
-        performerSearch = request.form['performer'].lower()
-        mfgrSearch = request.form['mfgr'].lower()
-        rollNrSearch = request.form['rollNr'].lower()
-        nrCopiesSearch = request.form['nrCopies'].lower()
+@app.route("/search_results", methods=["POST"])
+def search_results():
 
-        songs = []
+	songs = []
 	composers = []
 	performers = []
 	mfgrs = []
 	rollNrs = []
 	nrCopies = []
+	titleSearch = ""
+	titleQuery = ""
+	composerSearch = ""
+	composerQuery = ""
+	performerSearch = ""
+	performerQuery = ""
+	mfgrSearch = ""
+	mfgrQuery = ""
+	rollNrSearch = ""
+	rollNrQuery = ""
 
-        s = text("SELECT songs.title FROM songs WHERE LOWER(songs.title) LIKE :titleSearch")
+	allResults = []
+	"""
+	s = text("SELECT songs.title FROM songs WHERE LOWER(songs.title) LIKE :titleSearch")
+	c = text("SELECT composers.composer_name FROM composers WHERE LOWER(composers.composer_name) LIKE :composerSearch")
+	p = text("SELECT artists.name FROM artists WHERE LOWER(artists.name) LIKE :performerSearch")
+	m = text("SELECT manufacturer.name FROM manufacturer WHERE LOWER(manufacturer.name LIKE :mfgrSearch")
+	rn = text("SELECT rolls.rollnr FROM rolls WHERE LOWER(rolls.rollNr LIKE :rollNrSearch")
+	nc = text("SELECT rolls.nrcopies FROM rolls WHERE LOWER(rolls.nrCopies) LIKE: nrCopiesSearch")
+	"""
+	titleRequest = request.form['title']
+	compRequest = request.form['composer']
+	performRequest = request.form['performer']
+	mfgrRequest = request.form['mfgr']
+	rollNrRequest = request.form['rollNr']
+	nrCopiesRequest = request.form['nrCopies']
 
-        query = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
+	if(titleRequest and compRequest and performRequest and rollNrRequest and nrCopiesRequest):
 
-        if(query):
-                for song in query:
-                        songs.append(song['title'] + '<br>')
+		titleSearch = titleRequest.lower()
+#		titleQuery = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
 
-                songsStr = ''.join(songs)
-                return Markup('<strong> '+songsStr +'</strong>')
-        else:
-                return "No results found for '"+titleSearch+"'"
+		composerSearch = compRequest.lower()
+#		composerQuery = engine.execute(c, composerSearch='%'+composerSearch+'%').fetchall()
 
-session.close()
+		performerSearch = performRequest.lower()
+#		performerQuery = engine.execute(p, performerSearch='%'+performerSearch+'%').fetchall()
+
+		#mfgrSearch = mfgrRequest.lower()
+#		mfgrQuery = engine.execute(m, mfgrSearch='%'+mfgrSearch+'%').fetchall()
+
+		rollNrSearch = rollNrRequest.lower()
+		#rollNrQuery = engine.execute(rn, rollNrSearch='%'+rollNrSearch+'%').fetchall()
+
+		nrCopiesSearch = nrCopiesRequest.lower()
+		#nrCopiesQuery = engine.execute(nc, nrCopiesSearch='%'+nrCopiesSearch+'%').fetchall()
+		
+		query = text("SELECT songs.title, composers.composer_name," +
+			" artists.name, rolls.rollnr, rolls.num_copies FROM composers" + 
+			" NATURAL JOIN artists NATURAL JOIN rolls NATURAL JOIN songs" + 
+			" WHERE LOWER(songs.title) LIKE :titleSearch AND" +
+			" LOWER(composers.composer_name) LIKE :composerSearch AND" + 
+			" LOWER(artists.name) LIKE :performerSearch AND" +  
+			" rolls.rollnr = :rollNrSearch AND" + 
+			" rolls.num_copies = :nrCopiesSearch")
+			
+		allFieldsResult = engine.execute(query, titleSearch='%'+titleSearch+'%', composerSearch='%'+composerSearch+'%', performerSearch='%'+performerSearch+'%', rollNrSearch=rollNrSearch, nrCopiesSearch=nrCopiesSearch).fetchall()
+
+		if(allFieldsResult):
+			for line in allFieldsResult:
+				songs.append("Title: " + line['title'] + "<br>Composer: " + line['composer_name'] + "<br>Artist name: " + line['name'] + "<br>Roll number: " + str(line['rollnr']) + "<br>Number of copies: " + str(line['num_copies'])+ '<br><br>')
+
+			songsStr = ''.join(songs)
+			allResults.append(Markup('<strong> '+songsStr +'</strong>'))
+		else:
+			allResults.append("No results found.")
+		return ''.join(allResults)
+
+	elif(titleRequest and compRequest and performRequest and rollNrRequest):
+
+		titleSearch = titleRequest.lower()
+#		titleQuery = engine.execute(s, titleSearch='%'+titleSearch+'%').fetchall()
+
+		composerSearch = compRequest.lower()
+#		composerQuery = engine.execute(c, composerSearch='%'+composerSearch+'%').fetchall()
+
+		performerSearch = performRequest.lower()
+#		performerQuery = engine.execute(p, performerSearch='%'+performerSearch+'%').fetchall()
+
+		rollNrSearch = rollNrRequest.lower()
+		#rollNrQuery = engine.execute(rn, rollNrSearch='%'+rollNrSearch+'%').fetchall()
+
+		query = text("SELECT songs.title, composers.composer_name," +
+			" artists.name, rolls.rollnr FROM composers" + 
+			" NATURAL JOIN artists NATURAL JOIN rolls NATURAL JOIN songs" + 
+			" WHERE LOWER(songs.title) LIKE :titleSearch AND" +
+			" LOWER(composers.composer_name) LIKE :composerSearch AND" + 
+			" LOWER(artists.name) LIKE :performerSearch AND" +  
+			" rolls.rollnr = :rollNrSearch")
+			
+		allFieldsResult = engine.execute(query, titleSearch='%'+titleSearch+'%', composerSearch='%'+composerSearch+'%', performerSearch='%'+performerSearch+'%', rollNrSearch=rollNrSearch).fetchall()
+
+		if(allFieldsResult):
+			for line in allFieldsResult:
+				songs.append("Title: " + line['title'] + "<br>Composer: " + line['composer_name'] + "<br>Artist name: " + line['name'] + "<br>Roll number: " + str(line['rollnr'])+ '<br><br>')
+
+			songsStr = ''.join(songs)
+			allResults.append(Markup('<strong> '+songsStr +'</strong>'))
+		else:
+			allResults.append("No results found.")
+		return ''.join(allResults)
+
+	
+
+
+
+
+
+
+
+
+
+
+		"""
+		if(titleQuery):
+			for song in titleQuery:
+				songs.append(song['title'] + '<br>')
+
+			songsStr = ''.join(songs)
+			allResults.append(Markup('<strong> '+songsStr +'</strong>'))
+		else:
+			allResults.append("No results found for '"+titleSearch+"'")
+	return ''.join(allResults)
+	"""
+
+	session.close()
 if __name__ == '__main__':
 	app.run()
