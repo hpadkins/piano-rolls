@@ -271,7 +271,7 @@ def search_results():
 			" LOWER(composers.composer_name) LIKE :composerSearch AND" + 
 			" rolls.rollnr = :rollNrSearch")
 			
-		allFieldsResult = engine.execute(query, nrCopiesSearch='%'+nrCopiesSearch+'%', composerSearch='%'+composerSearch+'%', rollNrSearch='%'+rollNrSearch+'%').fetchall()
+		allFieldsResult = engine.execute(query, nrCopiesSearch=nrCopiesSearch, composerSearch='%'+composerSearch+'%', rollNrSearch=rollNrSearch).fetchall()
 
 		if(allFieldsResult):
 			for line in allFieldsResult:
@@ -302,7 +302,7 @@ def search_results():
 			" LOWER(composers.composer_name) LIKE :composerSearch AND" + 
 			" rolls.rollnr = :rollNrSearch")
 			
-		allFieldsResult = engine.execute(query, titleSearch='%'+titleSearch+'%', composerSearch='%'+composerSearch+'%', rollNrSearch='%'+rollNrSearch+'%').fetchall()
+		allFieldsResult = engine.execute(query, titleSearch='%'+titleSearch+'%', composerSearch='%'+composerSearch+'%', rollNrSearch=rollNrSearch).fetchall()
 
 		if(allFieldsResult):
 			for line in allFieldsResult:
@@ -432,9 +432,9 @@ def search_results():
 		query = text("SELECT songs.title, composers.composer_name," +
 			" artists.name, rolls.rollnr, rolls.num_copies FROM composers" + 
 			" NATURAL JOIN artists NATURAL JOIN rolls NATURAL JOIN songs" + 
-			" WHERE rolls.rollnr = rollNrSearch")
+			" WHERE rolls.rollnr = :rollNrSearch")
 			
-		allFieldsResult = engine.execute(query, rollNrSearch='%'+rollNrSearch+'%').fetchall()
+		allFieldsResult = engine.execute(query, rollNrSearch=rollNrSearch).fetchall()
 
 		if(allFieldsResult):
 			for line in allFieldsResult:
